@@ -59,6 +59,151 @@ Sim1.prototype.makeCards = function(cardValue, manaValue){
     this.cards = _.map(_.range(1, 11), i => makeCard(i, cardValue, manaValue));
 };
 
+var Player = function(deck, health){
+    this.health = health;
+    this.deck = deck;
+    this.hand = [];
+    this.board = [];
+    this.mana = 0;
+
+    this.draw(4);
+};
+
+Player.prototype.draw = function(n){
+    for (var i = 0; i < n; i++){
+        if (this.deck.length > 0){
+            var idx = Math.floor(Math.random() * this.deck.length);
+            this.hand.push(this.deck[idx]);
+            this.deck.splice(idx, 1);
+        }
+    }
+};
+
+Player.prototype.takeTurn = function(opp){
+    this.mana += 1;
+    
+    this.attack(opp);
+
+    this.playCards();
+};
+
+Player.prototype.attack = function(opp){
+    if (opp.health < this.health){
+        _.each(this.board, card => opp.health -= card.attack);
+    }
+    else{
+        
+    }
+};
+
+Player.prototype.findBestAttack = function(opp){
+    var bestPattern = [];
+    var bestValue = 0;
+
+    var pattern = _.map(this.board, () => -1);
+    while (pattern[0] < opp.board.length){
+        var faceDamage = 0;
+        var legalAttack = true;
+        
+        var healths = [opp.health].concat(_.map(opp.board, card => card.health));
+        var damageBack = [0].concat(_.map(opp.board, card => card.attack));
+
+        var score = 0;
+        for (var i = 0; i < pattern.length; i++){
+            var target = pattern[i] + 1;
+            if (target > 0 && healths[target] <= 0){
+                legalAttack = false;
+                break;
+            }
+            healths[target] -= this.board[i].attack;
+            if (healths[target] <= 0){
+                if (target === 0){
+                    return pattern;
+                }
+                else{
+                    score += target.attack * 100;
+                }
+            }
+            
+            if (damageBack[target] > this.board[i].health){
+                score -= 50 * this.board[i].attack;
+            }
+
+            if (target === 0){
+                score += this.board[i].attack;
+            }
+        }
+
+        if (score > bestValue){
+            bestPattern = _.clone(pattern);
+            bestValue = score;
+        }
+
+        var inc = pattern.length - 1;
+        pattern[inc] += 1;
+        while (pattern[inc] == opp.board.length){
+            if (inc >= 1){
+                pattern[inc] = 0;
+                inc -= 1;
+                pattern[inc] += 1;
+            }
+            else{
+                break;
+            }
+        }
+    }
+
+    return bestPattern;
+};
+
+Player.prototype.playCards = function(){
+    var playableCards = _.filter(this.hand, card => card.manaCost < this.mana);
+    
+    var bestSet = [];
+    var bestValue = 0;
+
+    var cardCheck = function(playedCards){
+        var score = _.reduce(playedCards, (memo, card) => memo + card.attack + card.health, 0);
+        if (score > bestValue){
+            bestSet = playedCards;
+            bestValue = score;
+        }
+    };
+
+    //can sort these cards by mana cost to avoid duplicate searches.
+
+    var findCards = (playedCards, playableCards, manaPlayed) => {
+        if (manaPlayed == this.mana){
+            cardCheck(playedCards);
+        }
+        else{
+            playableCards = _.filter(playableCards, card => card.manaCost < this.mana - manaPlayed);
+            if (playableCards.length == 0){
+                cardCheck(playedCards);
+            }
+            else{
+                for (var i = 0; i < playableCards.length; i++){
+                    var card = playableCards[i];
+                    var newPlayedCards = _.clone(playedCards);
+                    newPlayedCards.push(card);
+                    var newPlayableCards = _.clone(playableCards);
+                    newPlayableCards.splice(i, 1);
+                    findCards(newPlayedCards, newPlayableCards, manaPlayed + card.manaCost);
+                }
+            }
+        }
+    };
+
+    findCards([], this.hand, 0);
+
+    this.hand = _.difference(this.hand, bestSet);
+    this.board = this.board.concat(bestSet);
+};
+
+var Game = function(decks, startHealth){
+    this.players = _.map(decks, deck => new Player(deck, startHealth));
+};
+
 var Sim2 = function(){
     this.canvas = $('#sim2')[0];
     this.ctx = this.canvas.getContext('2d');
