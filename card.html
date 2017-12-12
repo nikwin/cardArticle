@@ -1,6 +1,7 @@
 <script type="text/javascript" src="jquery-1.11.3.min.js"></script>
 <script type="text/javascript" src="underscore-min.js"></script>
 <script type="text/javascript" src="std.js"></script>
+<script type="text/javascript" src="card.js"></script>
 <h2>Balancing Card Games</h2>
 <p>Card games are inherently complicated to understand and balance due to their intrinsic randomness. It can be hard as a designer to really grok how a variety of games will play out due to the pervasiveness of that randomness. This article simulates a very basic card game so as to help you understand a standard spine for card games and provide a foundation for you to use when building one of your own.</p>
 <h3>Mana and Cards</h3>
@@ -8,3 +9,24 @@
 <p>We're only going to have vanilla cards here and give them a value based on their mana cost and a base value for being a card. We should be able to generate an aggressive deck and a control deck that together qualify as balanced from this.</p>
 <p>The early part of a card game like this tends to be mana constrained as players have lots of cards, but limited mana. The late game becomes card constrained as the players have spent most of their cards, but have lots of mana. So, an aggro deck is one that can play a lot of cards in the early game and a control deck is one that has spent more total mana by the late game.</p>
 <p>From this, it's easy to see that increasing the base value of the cards will benefit aggro decks and increasing the value mana gives to a card benefits control decks.</p>
+<table><tr>
+    <td><canvas id="sim1" width="480px" height="320px" align="center"></canvas></td>
+    <td>
+      <p>Base Card Value</p>
+      <input id="input1_cardVal" type="range" min="0" max="5" value="0"><span id="disp1_cardVal">0</span>
+      <p>Mana Value</p>
+      <input id="input1_manaVal" type="range" min="0" max="5" value="1"><span id="disp1_manaVal">1</span>
+</td>
+</tr></table>
+<h3>Balance</h3>
+<p>Let's start by taking a pair of decks to represent aggro and control respectively. These decks both have a slightly more midrange curve than what you would expect in most actual card games as it's a two-deck metagame, but they should be good enough for a demonstration.</p>
+<p>Given these two decks, find a pair of numbers for the base card value and mana value that result in a win split no worse than 40-60.</p>
+<table><tr>
+    <td><canvas id="sim2" width="480px" height="320px" align="center"></canvas></td>
+    <td>
+      <p>Base Card Value</p>
+      <input id="input2_cardVal" type="range" min="0" max="5" value="0"><span id="disp2_cardVal">0</span>
+      <p>Mana Value</p>
+      <input id="input2_manaVal" type="range" min="0" max="5" value="1"><span id="disp2_manaVal">1</span>
+</td>
+</tr></table>
