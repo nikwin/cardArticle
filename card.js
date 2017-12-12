@@ -139,7 +139,7 @@ Player.prototype.findBestAttack = function(opp){
                     return pattern;
                 }
                 else{
-                    score += target.attack * 100;
+                    score += damageBack[target] * 1000;
                 }
             }
             
@@ -151,6 +151,7 @@ Player.prototype.findBestAttack = function(opp){
                 score += this.board[i].attack;
             }
         }
+
 
         if (score > bestValue){
             bestPattern = _.clone(pattern);
@@ -239,17 +240,32 @@ Game.prototype.takeTurn = function(){
 
     _.invoke(this.players, 'death');
 
-    return _.any(this.players, player => player.health <= 0);
+    return this.isOver();
 };
+
+Game.prototype.isOver = function(){ return _.any(this.players, player => player.health <= 0); };
 
 var Sim2 = function(){
     this.canvas = $('#sim2')[0];
     this.ctx = this.canvas.getContext('2d');
     $('#input2_cardVal').on('change', () => this.refresh());
     $('#input2_manaVal').on('change', () => this.refresh());
+    $('#step2').click(() => this.drawSingleGame());
 };
 
 Sim2.prototype.update = function(interval){
+    if (this.mode == 'low'){
+        this.waitingPeriod -= interval;
+        if (this.waitingPeriod < 0){
+            if (this.game.isOver()){
+                this.mode = 'high';
+            }
+            else{
+                this.game.takeTurn();
+                this.waitingPeriod = 1;
+            }
+        }
+    }
     return true;
 };
 
@@ -261,8 +277,9 @@ Sim2.prototype.draw = function(){
     this.ctx.fillStyle = '#000000';
     this.ctx.font = '20px Arial';
 
-    if (this.mode == 'high'){
-        var drawCardSet = (cardSet, y) => {
+    this.ctx.fillRect(0, height / 2 - 1, width, 2);
+
+    var drawCardSet = (cardSet, y) => {
             var sortedCards = _.groupBy(cardSet, 'manaCost');
             var column = 0;
             _.each(sortedCards, (cards, i) => {
@@ -272,16 +289,26 @@ Sim2.prototype.draw = function(){
                 column += 1;
             });
         };
+    this.ctx.fillText('Aggro', 400, 40);
+    this.ctx.fillText('Control', 400, 200);
 
+    if (this.mode == 'high'){
         drawCardSet(this.aggroCards, 10);
-        this.ctx.fillText('Aggro', 400, 40);
+        
         this.ctx.fillText('' + this.aggroWinPercent + '%', 400, 100);
 
         drawCardSet(this.controlCards, 175);
-        this.ctx.fillText('Control', 400, 200);
-        this.ctx.fillText('' + (100 - this.aggroWinPercent) + '%', 400, 260);
         
-        this.ctx.fillRect(0, height / 2 - 1, width, 2);
+        this.ctx.fillText('' + (100 - this.aggroWinPercent) + '%', 400, 260);
+    }
+    else{
+        drawCardSet(this.game.players[0].board, 10);
+
+        this.ctx.fillText('' + this.game.players[0].health, 400, 100);
+
+        drawCardSet(this.game.players[1].board, 175);
+
+        this.ctx.fillText('' + this.game.players[1].health, 400, 260);
     }
 };
 
@@ -294,8 +321,8 @@ Sim2.prototype.refresh = function(){
     var aggroWins = 0;
     var controlWins = 0;
 
-    for (var i = 0; i < 10; i++){
-        var game = new Game([this.aggroCards, this.controlCards], 50);
+    for (var i = 0; i < 50; i++){
+        var game = this.makeGame();
         while (!game.takeTurn()){}
         
         if (game.players[0].health > 0){
@@ -307,6 +334,16 @@ Sim2.prototype.refresh = function(){
     }
         
     this.aggroWinPercent = Math.floor(100 * aggroWins / (aggroWins + controlWins));
+};
+
+Sim2.prototype.drawSingleGame = function(){
+    this.mode = 'low';
+    this.waitingPeriod = 1;
+    this.game = this.makeGame();
+};
+
+Sim2.prototype.makeGame = function(){
+    return new Game([this.aggroCards, this.controlCards], 50);
 };
 
 Sim2.prototype.initialize = function(){
