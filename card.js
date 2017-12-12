@@ -61,7 +61,7 @@ Sim1.prototype.makeCards = function(cardValue, manaValue){
 
 var Player = function(deck, health){
     this.health = health;
-    this.deck = deck;
+    this.deck = _.map(deck, card => _.clone(card));
     this.hand = [];
     this.board = [];
     this.mana = 0;
@@ -76,11 +76,17 @@ Player.prototype.draw = function(n){
             this.hand.push(this.deck[idx]);
             this.deck.splice(idx, 1);
         }
+        else{
+            this.health -= 10000;
+        }
     }
 };
 
 Player.prototype.takeTurn = function(opp){
     this.mana += 1;
+    this.mana = min(this.mana, 10);
+    
+    this.draw(1);
     
     this.attack(opp);
 
@@ -92,7 +98,20 @@ Player.prototype.attack = function(opp){
         _.each(this.board, card => opp.health -= card.attack);
     }
     else{
+        var bestAttackPattern = this.findBestAttack(opp);
         
+        for (var i = 0; i < bestAttackPattern.length; i++){
+            var card = this.board[i];
+            var target = bestAttackPattern[i];
+            if (target == -1){
+                opp.health -= card.attack;
+            }
+            else{
+                var oppCard = opp.board[target];
+                oppCard.health -= card.attack;
+                card.health -= oppCard.attack;
+            }
+        }
     }
 };
 
@@ -102,7 +121,6 @@ Player.prototype.findBestAttack = function(opp){
 
     var pattern = _.map(this.board, () => -1);
     while (pattern[0] < opp.board.length){
-        var faceDamage = 0;
         var legalAttack = true;
         
         var healths = [opp.health].concat(_.map(opp.board, card => card.health));
@@ -172,12 +190,14 @@ Player.prototype.playCards = function(){
 
     //can sort these cards by mana cost to avoid duplicate searches.
 
-    var findCards = (playedCards, playableCards, manaPlayed) => {
-        if (manaPlayed == this.mana){
+    var mana = this.mana;
+
+    var findCards = function(playedCards, playableCards, manaPlayed){
+        if (manaPlayed == mana){
             cardCheck(playedCards);
         }
         else{
-            playableCards = _.filter(playableCards, card => card.manaCost < this.mana - manaPlayed);
+            playableCards = _.filter(playableCards, card => card.manaCost < mana - manaPlayed);
             if (playableCards.length == 0){
                 cardCheck(playedCards);
             }
@@ -200,8 +220,26 @@ Player.prototype.playCards = function(){
     this.board = this.board.concat(bestSet);
 };
 
+Player.prototype.death = function(){
+    this.board = _.filter(this.board, card => card.health > 0);
+};
+
 var Game = function(decks, startHealth){
     this.players = _.map(decks, deck => new Player(deck, startHealth));
+    this.activeIndex = Math.floor(Math.random() * this.players.length);
+};
+
+Game.prototype.takeTurn = function(){
+    var activePlayer = this.players[this.activeIndex];
+    var oppPlayer = _.without(this.players, activePlayer)[0];
+    activePlayer.takeTurn(oppPlayer);
+
+    this.activeIndex += 1;
+    this.activeIndex %= this.players.length;
+
+    _.invoke(this.players, 'death');
+
+    return _.any(this.players, player => player.health <= 0);
 };
 
 var Sim2 = function(){
@@ -236,7 +274,12 @@ Sim2.prototype.draw = function(){
         };
 
         drawCardSet(this.aggroCards, 10);
+        this.ctx.fillText('Aggro', 400, 40);
+        this.ctx.fillText('' + this.aggroWinPercent + '%', 400, 100);
+
         drawCardSet(this.controlCards, 175);
+        this.ctx.fillText('Control', 400, 200);
+        this.ctx.fillText('' + (100 - this.aggroWinPercent) + '%', 400, 260);
         
         this.ctx.fillRect(0, height / 2 - 1, width, 2);
     }
@@ -247,6 +290,23 @@ Sim2.prototype.refresh = function(){
     var manaValue = parseInt($('#input2_manaVal').val());
 
     this.makeCards(cardValue, manaValue);
+
+    var aggroWins = 0;
+    var controlWins = 0;
+
+    for (var i = 0; i < 10; i++){
+        var game = new Game([this.aggroCards, this.controlCards], 50);
+        while (!game.takeTurn()){}
+        
+        if (game.players[0].health > 0){
+            aggroWins += 1;
+        }
+        else{
+            controlWins += 1;
+        }
+    }
+        
+    this.aggroWinPercent = Math.floor(100 * aggroWins / (aggroWins + controlWins));
 };
 
 Sim2.prototype.initialize = function(){
