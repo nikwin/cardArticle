@@ -1,8 +1,11 @@
 var width = 480;
 var height = 320;
 
+var RUN_COUNT = 1000;
+
 var makeCard = function(manaCost, cardValue, manaValue){
     var value = cardValue + manaValue * manaCost;
+    value = max(Math.floor(value), 1);
     return {
         manaCost: manaCost,
         attack: value, 
@@ -248,8 +251,7 @@ Game.prototype.isOver = function(){ return _.any(this.players, player => player.
 var Sim2 = function(){
     this.canvas = $('#sim2')[0];
     this.ctx = this.canvas.getContext('2d');
-    $('#input2_cardVal').on('change', () => this.refresh());
-    $('#input2_manaVal').on('change', () => this.refresh());
+    $('#input2_ratio').on('change', () => this.refresh());
     $('#step2').click(() => this.drawSingleGame());
 };
 
@@ -313,15 +315,21 @@ Sim2.prototype.draw = function(){
 };
 
 Sim2.prototype.refresh = function(){
-    var cardValue = parseInt($('#input2_cardVal').val());
-    var manaValue = parseInt($('#input2_manaVal').val());
+    var ratio = parseFloat($('#input2_ratio').val());
+
+    var manaValue = 5 / (3 + ratio);
+    var cardValue = ratio * manaValue;
+
+    $('#split2').text('Mana Value: ' + manaValue.toFixed(2) + ', Card Value: ' + cardValue.toFixed(2));
+
+    this.health = 100;
 
     this.makeCards(cardValue, manaValue);
 
     var aggroWins = 0;
     var controlWins = 0;
 
-    for (var i = 0; i < 50; i++){
+    for (var i = 0; i < RUN_COUNT; i++){
         var game = this.makeGame();
         while (!game.takeTurn()){}
         
@@ -334,6 +342,10 @@ Sim2.prototype.refresh = function(){
     }
         
     this.aggroWinPercent = Math.floor(100 * aggroWins / (aggroWins + controlWins));
+    
+    if (this.aggroWinPercent >= 40 && this.aggroWinPercent <= 60){
+        $('#task2_1').css('text-decoration', 'line-through');
+    }
 };
 
 Sim2.prototype.drawSingleGame = function(){
@@ -343,7 +355,7 @@ Sim2.prototype.drawSingleGame = function(){
 };
 
 Sim2.prototype.makeGame = function(){
-    return new Game([this.aggroCards, this.controlCards], 50);
+    return new Game([this.aggroCards, this.controlCards], this.health);
 };
 
 Sim2.prototype.initialize = function(){
@@ -363,7 +375,7 @@ Sim2.prototype.makeCards = function(cardValue, manaValue){
     };
 
     this.aggroCards = cardsFromCosts([[1, 4], [2, 8], [3, 4], [4, 4]]);
-    this.controlCards = cardsFromCosts([[2, 4], [3, 4], [4, 8], [5, 4]]);
+    this.controlCards = cardsFromCosts([[3, 4], [4, 8], [5, 4], [6, 4]]);
 };
 
 var App = function(){

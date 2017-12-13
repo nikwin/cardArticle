@@ -20,15 +20,31 @@
 </tr></table>
 <h3>Balance</h3>
 <p>Let's start by taking a pair of decks to represent aggro and control respectively. These decks both have a slightly more midrange curve than what you would expect in most actual card games as it's a two-deck metagame, but they should be good enough for a demonstration.</p>
-<p>Given these two decks, find a pair of numbers for the base card value and mana value that result in a win split no worse than 40-60.</p>
+<p>For this simulation, we're going to set the player health to be 100 and change the ratio of mana value to health value. We're going to use the 3 mana 5/5 as our static card and change the values for the other cards based on the chosen ratio. Given these two decks, find a ratio for the base card value and mana value that result in a win split no worse than 40-60.</p>
 <table><tr>
     <td><canvas id="sim2" width="480px" height="320px" align="center"></canvas></td>
     <td>
-      <p>Base Card Value</p>
-      <input id="input2_cardVal" type="range" min="0" max="5" value="0"><span id="disp2_cardVal">0</span>
-      <p>Mana Value</p>
-      <input id="input2_manaVal" type="range" min="0" max="5" value="1"><span id="disp2_manaVal">1</span>
-      <br /><br />
-      <button id="step2">Step Through</button>
+      <table>
+        <tr><td>
+            <p>Value Ratio</p>
+            <input id="input2_ratio" type="range" min="0" max="5" value="0" step="0.5"><span id="disp2_ratio">0</span>
+            <br />
+            <span id="split2"></span>
+            <br /><br />
+            <button id="step2">Step Through</button>
+        </td></tr>
+        <tr><td>
+            <br /><br />
+            <h4>Tasks</h4>
+            <p><ul>
+                <li id="task2_1">Win split no worse than 40-60</li>
+            </ul></p>
+        </td></tr>
+      </table>
 </td>
 </tr></table>
+<p>Observations:<ul>
+    <li>While the presentation here is not quite traditional, this ends up working exactly as one would expect. By increasing the ratio of card to mana value, but keeping the three-drop constant, we end up buffing the cheap cards and nerfing the expensive ones. By decreasing the ratio, we do the reverse. So, it is only natural that increasing the ratio helps aggro decks and decreasing it helps control decks.</li>
+    <li>Each game comes down to whether the control deck can establish board prescence before the aggro deck wins. Given the simplicity of this game, it's very unlikely for the aggro deck to come back once the control deck has turned the corner.</li>
+    <li>There's a very sharp increase in the aggro win rate when a certain threshold is crossed and then a much more moderate increase in the win rate. That point is where the early drops of the aggro deck get a buff and the late, sunstantially smaller increases are when the control cards are nerfed.</li>
+</ul></p>
