@@ -46,5 +46,61 @@
 <p>Observations:<ul>
     <li>While the presentation here is not quite traditional, this ends up working exactly as one would expect. By increasing the ratio of card to mana value, but keeping the three-drop constant, we end up buffing the cheap cards and nerfing the expensive ones. By decreasing the ratio, we do the reverse. So, it is only natural that increasing the ratio helps aggro decks and decreasing it helps control decks.</li>
     <li>Each game comes down to whether the control deck can establish board prescence before the aggro deck wins. Given the simplicity of this game, it's very unlikely for the aggro deck to come back once the control deck has turned the corner.</li>
-    <li>There's a very sharp increase in the aggro win rate when a certain threshold is crossed and then a much more moderate increase in the win rate. That point is where the early drops of the aggro deck get a buff and the late, sunstantially smaller increases are when the control cards are nerfed.</li>
+    <li>There's a very sharp increase in the aggro win rate when a certain threshold is crossed and then a much more moderate increase in the win rate after that. This point is where the early drops of the aggro deck get a buff and the late, sunstantially smaller increases are when the control cards are nerfed.</li>
+</ul></p>
+<h4>Health Changes</h4>
+<p>By changing the starting health, we very naturally expect to see a very different values for balance. For this simulation, I'm going to shift the starting health to 50 and leave the decks the same. Once again, you should try to find a ratio that results in a split of no worse than 60-40.</p>
+<table><tr>
+    <td><canvas id="sim3" width="480px" height="320px" align="center"></canvas></td>
+    <td>
+      <table>
+        <tr><td>
+            <p>Value Ratio</p>
+            <input id="input3_ratio" type="range" min="0" max="5" value="5" step="0.5"><span id="disp3_ratio">5</span>
+            <br />
+            <span id="split3"></span>
+            <br /><br />
+            <button id="step3">Step Through</button>
+        </td></tr>
+        <tr><td>
+            <br /><br />
+            <h4>Tasks</h4>
+            <p><ul>
+                <li id="task3_1">Win split no worse than 40-60</li>
+            </ul></p>
+        </td></tr>
+      </table>
+</td>
+</tr></table>
+<p>Observations:<ul>
+    <li>Reducing the starting health unsurprisingly greatly helped the aggro deck.</li>
+    <li>There is a clear inflection point at exactly the same threshold as in the previous section.</li>
+</ul></p>
+<h3>Card Draw</h3>
+<p>Another axis that we can play with is card draw. By having the players draw more cards, we greatly change the texture of the game and so need to change our values accordingly. For this simulation, both players are going to draw 2 cards every turn and we'll keep the starting health at 100. Once again, try to get a win split in the 40-60 range.</p>
+<table><tr>
+    <td><canvas id="sim4" width="480px" height="320px" align="center"></canvas></td>
+    <td>
+      <table>
+        <tr><td>
+            <p>Value Ratio</p>
+            <input id="input4_ratio" type="range" min="0" max="5" value="5" step="0.5"><span id="disp4_ratio">5</span>
+            <br />
+            <span id="split4"></span>
+            <br /><br />
+            <button id="step4">Step Through</button>
+        </td></tr>
+        <tr><td>
+            <br /><br />
+            <h4>Tasks</h4>
+            <p><ul>
+                <li id="task4_1">Win split no worse than 40-60</li>
+            </ul></p>
+        </td></tr>
+      </table>
+</td>
+</tr></table>
+<p>Observations:<ul>
+    <li>This naturally is much better for the aggro deck than for the control deck. Compare the win rates at the same ration to the simulation at 50 health and one card per turn and it is quite clear how significant a change this is.</li>
+    <li>Stepping through a game, you can see how much harder it is for the control deck to establish board control and how it struggles more to turn the corner once it has control.</li>
 </ul></p>

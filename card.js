@@ -62,12 +62,13 @@ Sim1.prototype.makeCards = function(cardValue, manaValue){
     this.cards = _.map(_.range(1, 11), i => makeCard(i, cardValue, manaValue));
 };
 
-var Player = function(deck, health){
+var Player = function(deck, health, cardsPerTurn){
     this.health = health;
     this.deck = _.map(deck, card => _.clone(card));
     this.hand = [];
     this.board = [];
     this.mana = 0;
+    this.cardsPerTurn = cardsPerTurn;
 
     this.draw(4);
 };
@@ -89,7 +90,7 @@ Player.prototype.takeTurn = function(opp){
     this.mana += 1;
     this.mana = min(this.mana, 10);
     
-    this.draw(1);
+    this.draw(this.cardsPerTurn);
     
     this.attack(opp);
 
@@ -228,8 +229,8 @@ Player.prototype.death = function(){
     this.board = _.filter(this.board, card => card.health > 0);
 };
 
-var Game = function(decks, startHealth){
-    this.players = _.map(decks, deck => new Player(deck, startHealth));
+var Game = function(decks, startHealth, cardsPerTurn){
+    this.players = _.map(decks, deck => new Player(deck, startHealth, cardsPerTurn));
     this.activeIndex = Math.floor(Math.random() * this.players.length);
 };
 
@@ -248,11 +249,20 @@ Game.prototype.takeTurn = function(){
 
 Game.prototype.isOver = function(){ return _.any(this.players, player => player.health <= 0); };
 
-var Sim2 = function(){
-    this.canvas = $('#sim2')[0];
+var Sim2 = function(id, health, cardsPerTurn){
+    this.setUi(id);
+    this.health = health;
+    this.cardsPerTurn = cardsPerTurn;
+};
+
+Sim2.prototype.setUi = function(id){
+    this.canvas = $('#sim' + id)[0];
     this.ctx = this.canvas.getContext('2d');
-    $('#input2_ratio').on('change', () => this.refresh());
-    $('#step2').click(() => this.drawSingleGame());
+    this.taskId = '#task' + id + '_1';
+    this.ratioId = '#input' + id + '_ratio';
+    this.splitId = '#split' + id;
+    $('#input' + id + '_ratio').on('change', () => this.refresh());
+    $('#step' + id).click(() => this.drawSingleGame());
 };
 
 Sim2.prototype.update = function(interval){
@@ -315,14 +325,12 @@ Sim2.prototype.draw = function(){
 };
 
 Sim2.prototype.refresh = function(){
-    var ratio = parseFloat($('#input2_ratio').val());
+    var ratio = parseFloat($(this.ratioId).val());
 
     var manaValue = 5 / (3 + ratio);
     var cardValue = ratio * manaValue;
 
-    $('#split2').text('Mana Value: ' + manaValue.toFixed(2) + ', Card Value: ' + cardValue.toFixed(2));
-
-    this.health = 100;
+    $(this.splitId).text('Mana Value: ' + manaValue.toFixed(2) + ', Card Value: ' + cardValue.toFixed(2));
 
     this.makeCards(cardValue, manaValue);
 
@@ -344,7 +352,7 @@ Sim2.prototype.refresh = function(){
     this.aggroWinPercent = Math.floor(100 * aggroWins / (aggroWins + controlWins));
     
     if (this.aggroWinPercent >= 40 && this.aggroWinPercent <= 60){
-        $('#task2_1').css('text-decoration', 'line-through');
+        $(this.taskId).css('text-decoration', 'line-through');
     }
 };
 
@@ -355,7 +363,7 @@ Sim2.prototype.drawSingleGame = function(){
 };
 
 Sim2.prototype.makeGame = function(){
-    return new Game([this.aggroCards, this.controlCards], this.health);
+    return new Game([this.aggroCards, this.controlCards], this.health, this.cardsPerTurn);
 };
 
 Sim2.prototype.initialize = function(){
@@ -364,11 +372,11 @@ Sim2.prototype.initialize = function(){
 };
 
 Sim2.prototype.makeCards = function(cardValue, manaValue){
-    var cardsFromCosts = function(costs){
+    var cardsFromCosts = (costs) => {
         var cards = [];
 
         _.each(costs, (pair) => {
-            _.each(_.range(pair[1]), () => cards.push(makeCard(pair[0], cardValue, manaValue)));
+            _.each(_.range(pair[1] * this.cardsPerTurn), () => cards.push(makeCard(pair[0], cardValue, manaValue)));
         });
 
         return cards;
@@ -381,7 +389,9 @@ Sim2.prototype.makeCards = function(cardValue, manaValue){
 var App = function(){
     this.sims = [
         new Sim1(),
-        new Sim2()
+        new Sim2(2, 100, 1),
+        new Sim2(3, 50, 1),
+        new Sim2(4, 100, 2)
     ];
     _.each(this.sims, sim => sim.initialize());
 };
