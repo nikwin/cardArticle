@@ -104,3 +104,22 @@
     <li>This naturally is much better for the aggro deck than for the control deck. Compare the win rates at the same ration to the simulation at 50 health and one card per turn and it is quite clear how significant a change this is.</li>
     <li>Stepping through a game, you can see how much harder it is for the control deck to establish board control and how it struggles more to turn the corner once it has control.</li>
 </ul></p>
+<h3>Sandbox</h3>
+<p>Here's all the variables that I've used above in one simulation.</p>
+<table><tr>
+    <td><canvas id="sandbox" width="480px" height="320px" align="center"></canvas></td>
+    <td>
+      <p>Card Value</p>
+      <input id="inputS_cardVal" type="range" min="0" max="10" value="1" step="0.5"><span id="dispS_cardVal">5</span>
+      <p>Mana Value</p>
+      <input id="inputS_manaVal" type="range" min="0" max="10" value="1" step="0.5"><span id="dispS_manaVal">5</span>
+      <br />
+      <p>Starting Health</p>
+      <input id="inputS_startHealth" type="range" min="50" max="500" value="50" step="0.5"><span id="dispS_startHealth">50</span>
+      <br />
+      <p>Cards Per Turn</p>
+      <input id="inputS_cardsPerTurn" type="range" min="0" max="5" value="1" step="1"><span id="dispS_cardsPerTurn">1</span>
+      <br />
+      <button id="stepS">Step Through</button>
+    </td>
+</tr></table>
