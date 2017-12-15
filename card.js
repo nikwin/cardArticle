@@ -334,6 +334,14 @@ Sim2.prototype.refresh = function(){
 
     this.makeCards(cardValue, manaValue);
 
+    this.findWinPercent();
+    
+    if (this.aggroWinPercent >= 40 && this.aggroWinPercent <= 60){
+        $(this.taskId).css('text-decoration', 'line-through');
+    }
+};
+
+Sim2.prototype.findWinPercent = function(){
     var aggroWins = 0;
     var controlWins = 0;
 
@@ -348,12 +356,8 @@ Sim2.prototype.refresh = function(){
             controlWins += 1;
         }
     }
-        
-    this.aggroWinPercent = Math.floor(100 * aggroWins / (aggroWins + controlWins));
     
-    if (this.aggroWinPercent >= 40 && this.aggroWinPercent <= 60){
-        $(this.taskId).css('text-decoration', 'line-through');
-    }
+    this.aggroWinPercent = Math.floor(100 * aggroWins / (aggroWins + controlWins));
 };
 
 Sim2.prototype.drawSingleGame = function(){
@@ -386,12 +390,51 @@ Sim2.prototype.makeCards = function(cardValue, manaValue){
     this.controlCards = cardsFromCosts([[3, 4], [4, 8], [5, 4], [6, 4]]);
 };
 
+var SimS = function(){
+    this.canvas = $('#simS')[0];
+    this.ctx = this.canvas.getContext('2d');
+    
+    $('#stepS').click(() => this.drawSingleGame());
+
+    $('#inputS_cardVal').on('change', () => this.refresh());
+    $('#inputS_manaVal').on('change', () => this.refresh());
+    $('#inputS_startHealth').on('change', () => this.refresh());
+    $('#inputS_cardsPerTurn').on('change', () => this.refresh());
+
+    $('#stepS').click(() => this.drawSingleGame());
+
+    this.refresh();
+};
+
+SimS.prototype.drawSingleGame = Sim2.prototype.drawSingleGame;
+SimS.prototype.update = Sim2.prototype.update;
+SimS.prototype.draw = Sim2.prototype.draw;
+
+SimS.prototype.refresh = function(){
+    var cardValue = parseFloat($('#inputS_cardVal').val());
+    var manaValue = parseFloat($('#inputS_manaVal').val());
+
+    this.makeCards(cardValue, manaValue);
+
+    this.health = parseFloat($('#inputS_startHealth').val());
+    this.cardsPerTurn = parseFloat($('#inputS_cardsPerTurn').val());
+
+    this.findWinPercent();
+};
+
+SimS.prototype.makeCards = Sim2.prototype.makeCards;
+SimS.prototype.findWinPercent = Sim2.prototype.findWinPercent;
+SimS.prototype.makeGame = Sim2.prototype.makeGame;
+
+SimS.prototype.initialize = Sim2.prototype.initialize;
+
 var App = function(){
     this.sims = [
         new Sim1(),
         new Sim2(2, 100, 1),
         new Sim2(3, 50, 1),
-        new Sim2(4, 100, 2)
+        new Sim2(4, 100, 2),
+        new SimS()
     ];
     _.each(this.sims, sim => sim.initialize());
 };
